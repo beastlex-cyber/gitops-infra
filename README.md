@@ -43,4 +43,13 @@
      docker exec -it gitops-test-control-plane crictl images | grep tf-runner
      ```
 4. Через HelmRelease ставим flux tofu controller
+   - Применяем манифесты из `clusters/gitops-test/`:
+     ```bash
+     kubectl apply -f clusters/gitops-test/helmrepository.yaml
+     kubectl apply -f clusters/gitops-test/helmrelease.yaml
+     ```
+   - Проверка:
+     ```bash
+     kubectl get pods -n flux-system
+     ```
 5. Создаем наши ресурсы через ресурс Terraform в кластере

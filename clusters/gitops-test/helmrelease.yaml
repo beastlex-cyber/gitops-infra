@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: tofu-controller
+  namespace: flux-system
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: tofu-controller
+      sourceRef:
+        kind: HelmRepository
+        name: tofu-controller
+        namespace: flux-system
+      version: ">=0.16.4"
+  values:
+    image:
+      tag: v0.16.4
+    runner:
+      image:
+        repository: tf-runner-decort
+        tag: v0.16.4
+        pullPolicy: IfNotPresent
+      grpc:
+        maxMessageSize: 30
