@@ -7,11 +7,22 @@ terraform {
   }
 }
 
+variable "DECORT_APP_ID" {
+  type      = string
+  sensitive = true
+}
+
+variable "DECORT_APP_SECRET" {
+  type      = string
+  sensitive = true
+}
 
 provider "decort" {
   authenticator        = "decs3o"
   controller_url       = "https://crps1.crps.basis.loc"
   oauth2_url           = "https://sso-crps1.crps.basis.loc"
+  app_id               = var.DECORT_APP_ID
+  app_secret           = var.DECORT_APP_SECRET
   allow_unverified_ssl = true
 }
 

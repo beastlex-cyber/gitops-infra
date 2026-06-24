@@ -15,6 +15,7 @@ RUN wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_V
   && rm -f terraform_${TF_VERSION}_linux_${TARGETARCH}.zip
 
 COPY entrypoint.sh required_providers.tf /
+RUN chmod +x /entrypoint.sh
 
 ENV TF_PLUGIN_CACHE_DIR="/opt/terraform.d/plugin-cache"
 
@@ -22,14 +23,25 @@ RUN mkdir -p /opt/terraform.d/plugin-cache \
   && terraform init \
   && rm -rf required_providers.tf /.terraform /.terraform.lock.hcl /LICENSE.txt
 
-# Install custom DECORT provider
-RUN mkdir -p /opt/terraform.d/plugin-cache/basis/decort/decort/${DECORT_PROVIDER_VERSION}/linux_${TARGETARCH} \
+# Install custom DECORT provider (dev_overrides — no registry lookup)
+RUN mkdir -p /opt/decort-provider \
   && wget -q https://repository.basistech.ru/BASIS/terraform-provider-decort/releases/download/${DECORT_PROVIDER_VERSION}/terraform-provider-decort_${DECORT_PROVIDER_VERSION}_linux_${TARGETARCH}.zip \
   && unzip -q terraform-provider-decort_${DECORT_PROVIDER_VERSION}_linux_${TARGETARCH}.zip -d /tmp/decort-provider \
-  && mv /tmp/decort-provider/bin/* /opt/terraform.d/plugin-cache/basis/decort/decort/${DECORT_PROVIDER_VERSION}/linux_${TARGETARCH}/ \
+  && mv /tmp/decort-provider/bin/* /opt/decort-provider/terraform-provider-decort \
+  && chmod +x /opt/decort-provider/terraform-provider-decort \
   && rm -rf terraform-provider-decort_${DECORT_PROVIDER_VERSION}_linux_${TARGETARCH}.zip /tmp/decort-provider
 
-RUN chown -R 65532:65532 /opt/terraform.d \
+# Terraform CLI config — skip registry lookup for custom DECORT provider
+RUN echo 'provider_installation {' > /etc/terraformrc \
+  && echo '  dev_overrides {' >> /etc/terraformrc \
+  && echo '    "basis/decort/decort" = "/opt/decort-provider"' >> /etc/terraformrc \
+  && echo '  }' >> /etc/terraformrc \
+  && echo '  direct {}' >> /etc/terraformrc \
+  && echo '}' >> /etc/terraformrc
+
+ENV TF_CLI_CONFIG_FILE=/etc/terraformrc
+
+RUN chown -R 65532:65532 /opt/terraform.d /opt/decort-provider \
   && rm -rf /opt/providers \
   && ln -s /opt/terraform.d/plugin-cache /opt/providers
 
