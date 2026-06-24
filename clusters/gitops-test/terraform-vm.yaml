@@ -1,0 +1,16 @@
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: decort-vm
+  namespace: flux-system
+spec:
+  interval: 1m
+  approvePlan: auto
+  path: ./infra
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+    namespace: flux-system
+  varsFrom:
+    - kind: Secret
+      name: decort-cred
