@@ -19,17 +19,28 @@
      ```
    - Bootstrap в репозиторий:
      ```bash
-     flux bootstrap github \
-       --owner=beastlex-cyber \
-       --repository=gitops-infra \
-       --branch=main \
-       --path=./clusters/gitops-test \
-       --personal
+     flux bootstrap git \
+     --url=ssh://git@github.com/beastlex-cyber/gitops-infra \
+     --branch=main \
+     --private-key-file=/home/user/.ssh/id_rsa_new \
+     --path=clusters/gitops-test
      ```
    - Проверка:
      ```bash
      flux get all
      ```
 3. Создаем кастомный runner для flux tofu controller
+   - Сборка образа (из `images/`):
+     ```bash
+     docker build -t tf-runner-decort:v0.16.4 images/
+     ```
+   - Загрузка в kind-кластер:
+     ```bash
+     kind load docker-image tf-runner-decort:v0.16.4 --name gitops-test
+     ```
+   - Проверка:
+     ```bash
+     docker exec -it gitops-test-control-plane crictl images | grep tf-runner
+     ```
 4. Через HelmRelease ставим flux tofu controller
 5. Создаем наши ресурсы через ресурс Terraform в кластере
