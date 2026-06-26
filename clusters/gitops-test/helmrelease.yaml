@@ -12,7 +12,7 @@ spec:
         kind: HelmRepository
         name: tofu-controller
         namespace: flux-system
-      version: ">=0.16.4"
+      version: "0.16.4"
   values:
     image:
       tag: v0.16.4
